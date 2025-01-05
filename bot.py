@@ -22,8 +22,7 @@ class Bot(Client):
         await super().start()
         me = await self.get_me()
         self.mention = me.mention
-        self.username = me.username  
-        self.uptime = Config.BOT_UPTIME     
+        self.username = me.username     
         if Config.WEBHOOK:
             app = web.AppRunner(await web_server())
             await app.setup()       
