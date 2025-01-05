@@ -33,7 +33,6 @@ class Bot(Client):
     async def stop(self):
         await super().stop()
 
-
 async def main():
     bot = Bot()
     await bot.start()
