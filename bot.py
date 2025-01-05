@@ -1,41 +1,60 @@
-import asyncio
-from pyrogram import Client, __version__
-from config import Config
-from aiohttp import web
-from route import web_server
-import time
+import logging
+from pyrogram import Client, idle, enums
+from config import *
+from flask import Flask
+import os
+from config import *
 
-class Bot(Client):
+logging.basicConfig(
+    level=logging.WARNING, 
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[
+        # logging.FileHandler("bot.log"),  # Écrit les logs dans bot.log
+        logging.StreamHandler()  # Désactivé pour ne pas écrire dans la console
+    ]
+)
 
-    def __init__(self):
-        super().__init__(
-            name="Crypto_mine",
-            api_id=Config.API_ID,
-            api_hash=Config.API_HASH,
-            bot_token=Config.BOT_TOKEN,
-            workers=200,
-            plugins={"root": "plugins"},
-            sleep_threshold=15,
-        )
-        self.start_time = time.time()
+logger = logging.getLogger(__name__)
 
-    async def start(self):
-        await super().start()
-        me = await self.get_me()
-        self.mention = me.mention
-        self.username = me.username
-        if Config.WEBHOOK:
-            app = web.AppRunner(await web_server())
-            await app.setup()
-            await web.TCPSite(app, "0.0.0.0", 8080).start()
-        print(f"{me.first_name} Is Started.....✨️")
+logging.getLogger("pyrogram").setLevel(logging.WARNING)
+logging.getLogger("werkzeug").setLevel(logging.ERROR)
 
-    async def stop(self):
-        await super().stop()
+app = Flask(__name__)
 
-async def main():
-    bot = Bot()
-    await bot.start()
+@app.route('/')
+def home():
+    return "Bot is running. Made with ♥️ by Hyoshdesign"
+
+def start_server():
+    port = int(os.environ.get("PORT", 5001))
+    app.run(host="0.0.0.0", port=port)
+
+bot = Client(
+    "RenamerBot",
+    bot_token=BOT_TOKEN,
+    api_id=API_ID,
+    api_hash=API_HASH,
+    plugins=dict(root='plugins')
+)
+
+def main():
+    if STRING:
+        apps = [bot]
+        
+        for app_instance in apps:
+            app_instance.start()
+            logger.warning("Bot started. WARNING and ERROR logs are captured.")
+        
+        idle()
+        
+        for app_instance in apps:
+            app_instance.stop()
+    else:
+        bot.run()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    from threading import Thread
+    server_thread = Thread(target=start_server)
+    server_thread.start()
+    
+    main()
