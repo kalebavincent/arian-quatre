@@ -47,7 +47,7 @@ class Bot(Client):
         )
         LOGGER.info(f"Python Version: {python_version()}\n")
         LOGGER.info("Bot Started Successfully!\n")
-        await asyncio.sleep(10)
+        await asyncio.sleep(50)
         await self.send_message(LOG_CHANNEL, "<i>Démarrage du bot...</i>")
         
         bot_online = True  # Marquer le bot comme étant en ligne
