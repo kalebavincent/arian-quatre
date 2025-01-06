@@ -1,11 +1,14 @@
-FROM python:3.10-slim
+FROM python:3.9-slim
 
 WORKDIR /app
 
-COPY requirements.txt .
+COPY . /app
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
 
-COPY . .
+EXPOSE 5000
 
-CMD ["python3", "bot.py"]
+ENV PYTHONUNBUFFERED=1
+
+CMD ["python", "-m bot"]
