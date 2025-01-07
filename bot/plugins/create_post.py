@@ -89,23 +89,72 @@ async def set_bottom_text_handler(bot:Client,message:Message):
                                 reply_markup=empty_markup(),
                                 disable_web_page_preview=True)  
 
-@Bot.on_callback_query(filters.regex('^add_image$')& (filters.user(get_admin()) | filters.user(SUDO_USERS)))
-async def add_image_handler(bot:Client,message:Message):
-    msg=await bot.ask(message.message.chat.id,"**✅ Envoyer une image **",
-                        parse_mode=enums.ParseMode.MARKDOWN,
-                        reply_markup=back_markup())
-    if msg.text=='🚫 Cancel':
-        await bot.send_message(message.message.chat.id,"Terminé",reply_markup=empty_markup())
-    else:
-        if msg.media==True:
-            await bot.download_media(message=msg,file_name='image.jpg',progress=progress)
-            await bot.send_message(message.message.chat.id,f"Image enregistrée avec succès\n\n",
-                                    reply_markup=empty_markup(),
-                                    disable_web_page_preview=True)  
+@Bot.on_callback_query(filters.regex('^add_image$') & (filters.user(get_admin()) | filters.user(SUDO_USERS)))
+async def add_image_handler(bot: Client, query: CallbackQuery):
+    """Gestionnaire pour ajouter une image."""
+    chat_id = query.message.chat.id
+    
+    # Demander à l'utilisateur d'envoyer une image
+    await query.message.reply_text(
+        "**✅ Envoyez une image :**",
+        parse_mode=enums.ParseMode.MARKDOWN,
+        reply_markup=back_markup()
+    )
+    
+    try:
+        # Attente de la réponse de l'utilisateur
+        msg: Message = await bot.listen(chat_id, timeout=60)  # Timeout après 60 secondes
+        
+        # Vérifier si l'utilisateur annule
+        if msg.text == '🚫 Annuler':
+            await bot.send_message(
+                chat_id,
+                "❌ Action annulée.",
+                reply_markup=empty_markup()
+            )
+            return
+        
+        # Vérifier si un média est envoyé
+        if msg.photo or msg.document:
+            file_name = "image.jpg" if msg.photo else msg.document.file_name
+            
+            # Télécharger l'image
+            await bot.download_media(
+                message=msg,
+                file_name=file_name,
+                progress=progress
+            )
+            
+            await bot.send_message(
+                chat_id,
+                f"✅ Image enregistrée avec succès sous le nom `{file_name}`.",
+                parse_mode=enums.ParseMode.MARKDOWN,
+                reply_markup=empty_markup()
+            )
         else:
-            await bot.send_message(message.from_user.id,"Action invalide",reply_markup=empty_markup())
-        
-        
+            # Aucun média valide reçu
+            await bot.send_message(
+                chat_id,
+                "❌ Action invalide. Veuillez envoyer une image ou un fichier valide.",
+                reply_markup=empty_markup()
+            )
+    except TimeoutError:
+        # Gérer les réponses tardives ou absentes
+        await bot.send_message(
+            chat_id,
+            "⏳ Temps écoulé. Veuillez réessayer.",
+            reply_markup=empty_markup()
+        )
+    except Exception as e:
+        LOGGER.error(f"Erreur dans `add_image_handler` : {e}")
+        await bot.send_message(
+            chat_id,
+            "❌ Une erreur s'est produite. Veuillez réessayer.",
+            reply_markup=empty_markup()
+        )
+
+
 def progress(current, total):
-    LOGGER.info(f"Téléchargement terminé {current * 100 / total:.1f}%")
+    """Affiche la progression du téléchargement."""
+    LOGGER.info(f"Téléchargement : {current * 100 / total:.1f}%")
     
