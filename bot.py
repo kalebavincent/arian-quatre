@@ -7,6 +7,8 @@ from time import gmtime, strftime, time
 from pyrogram import Client, __version__, idle
 from pyrogram.raw.all import layer
 from bot.database import session, base
+from pyromod import listen
+
 import logging
 from bot import (
     STRING_SESSION,
