@@ -19,22 +19,23 @@ import re
 async def create_post_handler(bot:Client,message:Message):
     await bot.send_message(message.message.chat.id,"✅ Définir le champ requis",reply_markup=create_post_markup())
     
-@Bot.on_callback_query(filters.regex('^set_button$')& (filters.user(get_admin()) | filters.user(SUDO_USERS)))
-async def set_button_handler(bot:Client,message:Message):
-    btn_name=await bot.ask(message.message.chat.id,"<b>✅ Envoyer le nom du bouton</b>",reply_markup=back_markup())
-    if btn_name.text=='🚫 Cancel':
-            await bot.send_message(message.message.chat.id,"Terminé",reply_markup=empty_markup())
+@Bot.on_callback_query(filters.regex('^set_button$') & (filters.user(get_admin()) | filters.user(SUDO_USERS)))
+async def set_button_handler(bot: Client, message: Message):
+    btn_name = await bot.ask(message.message.chat.id, "<b>✅ Envoyer le nom du bouton</b>", reply_markup=back_markup())
+    
+    # Vérification du nom du bouton
+    if not btn_name.text or btn_name.text == '🚫 Cancel':
+        await bot.send_message(message.message.chat.id, "Action annulée ou nom invalide.", reply_markup=empty_markup())
+        return
+    
+    btn_link = await bot.ask(message.message.chat.id, "<b>✅ Envoyer le lien du bouton</b>", reply_markup=back_markup())
+    
+    if btn_link.text == '🚫 Cancel':
+        await bot.send_message(message.message.chat.id, "Terminé", reply_markup=empty_markup())
     else:
-        btn_link=await bot.ask(message.message.chat.id,"<b>✅ Envoyer le lien du bouton</b>",reply_markup=back_markup())
-        if btn_link.text=='🚫 Cancel':
-            await bot.send_message(message.message.chat.id,"Terminé",reply_markup=empty_markup())
-        else:
-                add_button(btn_name.text,btn_link.text)
-                await bot.send_message(message.message.chat.id,("<b>✅ Bouton ajouté avec succès</b>\n\n"
-                                                                f"Nom : {btn_name.text}\n"
-                                                                f"URL : {btn_link.text}")
-                                       ,reply_markup=empty_markup())
-                
+        add_button(btn_name.text, btn_link.text)  # Enregistrement du bouton
+        await bot.send_message(message.message.chat.id, f"<b>✅ Bouton ajouté avec succès</b>\n\nNom : {btn_name.text}\nURL : {btn_link.text}", reply_markup=empty_markup())
+        
 @Bot.on_callback_query(filters.regex('^delete_button$')& (filters.user(get_admin()) | filters.user(SUDO_USERS)))
 async def delete_button_handler(bot:Client,message:Message):
     delete_button()
