@@ -85,7 +85,7 @@ async def show_channel_handler(bot: Client, message: Message):
         else:
             channel = get_channel_by_id(channel_info.forward_from_chat.id)
             data = f"""
-🆔 ID : {channel.id}
+🆔 ID : {channel.channel_id}
 📛 Nom : {channel.channel_name}
 📄 Description : {channel.description}
 ➖ Abonnés : {channel.subscribers}

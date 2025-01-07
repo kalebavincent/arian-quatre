@@ -54,7 +54,7 @@ async def channel_list_handler(bot: Client, message: Message):
     with open("channels.txt", "w", encoding='UTF-8') as f:
         for channel in channels:
             data = f"""
-🆔 ID : {channel.id}
+🆔 ID : {channel.channel_id}
 📛 Nom : {channel.channel_name}
 👤 Abonnés : {channel.subscribers}
 📄 Description : {channel.description}
