@@ -1,5 +1,6 @@
 from pyrogram import filters,Client, enums
 from bot.bot import Bot
+from pyrogram.types import CallbackQuery
 from pyrogram.types import Message
 import traceback,time
 from bot.database.models.user_db import get_admin                                                                                                    
@@ -89,23 +90,47 @@ async def set_bottom_text_handler(bot:Client,message:Message):
                                 reply_markup=empty_markup(),
                                 disable_web_page_preview=True)  
 
-@Bot.on_callback_query(filters.regex('^add_image$')& (filters.user(get_admin()) | filters.user(SUDO_USERS)))
-async def add_image_handler(bot:Client,message:Message):
-    msg=await bot.ask(message.message.chat.id,"**✅ Envoyer une image **",
-                        parse_mode=enums.ParseMode.MARKDOWN,
-                        reply_markup=back_markup())
-    if msg.text=='🚫 Cancel':
-        await bot.send_message(message.message.chat.id,"Terminé",reply_markup=empty_markup())
+@Bot.on_callback_query(filters.regex('^add_image$') & (filters.user(get_admin()) | filters.user(SUDO_USERS)))
+async def add_image_handler(bot: Client, query: CallbackQuery):
+    # Demande d'envoi d'une image
+    msg = await bot.ask(
+        chat_id=query.message.chat.id,
+        text="**✅ Envoyez une image pour l'ajouter**",
+        parse_mode=enums.ParseMode.MARKDOWN,
+        reply_markup=back_markup()
+    )
+
+    # Gestion de l'annulation
+    if msg.text == '🚫 Annuler':
+        await bot.send_message(query.message.chat.id, "Opération annulée", reply_markup=empty_markup())
+        return
+
+    # Vérification si le message contient une photo ou un média
+    if msg.photo or msg.document:
+        # Téléchargement de l'image
+        file_name = 'image.jpg'
+        file_path = await bot.download_media(
+            message=msg,
+            file_name=file_name,
+            progress=progress
+        )
+
+        # Confirmation de la réussite
+        await bot.send_message(
+            query.message.chat.id,
+            f"✅ Image enregistrée avec succès : `{file_name}`",
+            reply_markup=empty_markup(),
+            disable_web_page_preview=True
+        )
     else:
-        if msg.media==True:
-            await bot.download_media(message=msg,file_name='image.jpg',progress=progress)
-            await bot.send_message(message.message.chat.id,f"Image enregistrée avec succès\n\n",
-                                    reply_markup=empty_markup(),
-                                    disable_web_page_preview=True)  
-        else:
-            await bot.send_message(message.from_user.id,"Action invalide",reply_markup=empty_markup())
-        
-        
+        # Message sans média
+        await bot.send_message(
+            query.message.chat.id,
+            "❌ Aucune image détectée. Veuillez envoyer une image ou un fichier valide.",
+            reply_markup=empty_markup()
+        )
+
+
+# Fonction de progression pour le téléchargement
 def progress(current, total):
-    LOGGER.info(f"Téléchargement terminé {current * 100 / total:.1f}%")
-    
+    LOGGER.info(f"Téléchargement : {current * 100 / total:.1f}% terminé")   

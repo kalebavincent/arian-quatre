@@ -1,4 +1,5 @@
 from pyrogram import filters,Client, enums
+from pyrogram.types import CallbackQuery
 from bot.bot import Bot
 from pyrogram.types import Message
 import traceback,time
