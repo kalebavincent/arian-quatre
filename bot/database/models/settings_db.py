@@ -45,15 +45,23 @@ def add_list_size(size):
 
 def get_settings():
     try:
-        return session.query(Settings).first()
+        settings = session.query(Settings).first()
+        if settings is None:
+            return {"subs_limit": "Non défini", "list_size": "Non défini"}
+        return settings
     finally:
-        session.close() 
-        
-        
+        session.close()
+
+
 def get_subcribers_limit():
-    limit=session.query(Settings).first()
-    return limit.subs_limit
+    settings = session.query(Settings).first()
+    if settings is None:
+        return "Non défini"
+    return settings.subs_limit
+
 
 def get_list_size():
-    limit=session.query(Settings).first()
-    return limit.list_size
+    settings = session.query(Settings).first()
+    if settings is None:
+        return "Non défini"
+    return settings.list_size

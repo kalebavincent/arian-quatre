@@ -10,31 +10,23 @@ from bot import LOGGER,LOG_CHANNEL,SUDO_USERS
 
 
 @Bot.on_callback_query(filters.regex('^stats$') & (filters.user(get_admin()) | filters.user(SUDO_USERS)))
-async def bot_stats(bot: Client, message: Message):
-    stats = f"""<b>Total des utilisateurs :</b> {total_users()}
+async def bot_stats(bot : Client , message : Message):
+    stats=f"""<b>Total des utilisateurs :</b> {total_users()}
 <b>Total des administrateurs :</b> {total_admin()}
 <b>Nombre de canaux enregistrés :</b> {total_channel()}
 <b>Nombre de canaux bannis :</b> {total_banned_channel()}"""
-    
     LOGGER.info(f"BOT STATISTICS : \n {stats}")
-    await bot.send_message(message.message.chat.id, stats)
-
+    await bot.send_message(message.message.chat.id,stats)
     
-@Bot.on_callback_query(filters.regex('^settings$') & (filters.user(get_admin()) | filters.user(SUDO_USERS)))
-async def settings_handler(bot: Client, message: Message):
-    info = get_settings()
-
-    if info is None:
-        await bot.send_message(message.from_user.id, "❌ Aucune configuration trouvée. Veuillez définir les paramètres de configuration.", reply_markup=settings_markup())
-        return
-
-    text = f"""
-🔄 Limite des abonnés : {info.subs_limit}
+    
+@Bot.on_callback_query(filters.regex('^settings$') &(filters.user(get_admin()) | filters.user(SUDO_USERS)))
+async def settings_handler(bot : Client , message : Message):
+    info=get_settings()
+    text=f"""
+🔄 Limite de abonnés : {info.subs_limit}
 🏷 Taille de la liste : {info.list_size}
     """
-    
-    await bot.send_message(message.from_user.id, text, reply_markup=settings_markup())
-
+    await bot.send_message(message.from_user.id,text,reply_markup=settings_markup())
     
 @Bot.on_callback_query(filters.regex('^subs_limit$') &(filters.user(get_admin()) | filters.user(SUDO_USERS)))
 async def subs_limit_handler(bot : Client , message : Message):
