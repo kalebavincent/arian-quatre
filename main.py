@@ -1,5 +1,4 @@
-from bot.bot import Bot
+from bot.bot import start_bot_and_flask
 
 if __name__ == "__main__":
-    bot = Bot()
-    bot.run()
+    start_bot_and_flask()
