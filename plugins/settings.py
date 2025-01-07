@@ -19,14 +19,21 @@ async def bot_stats(bot : Client , message : Message):
     await bot.send_message(message.message.chat.id,stats)
     
     
-@Bot.on_callback_query(filters.regex('^settings$') &(filters.user(get_admin()) | filters.user(SUDO_USERS)))
+@Bot.on_callback_query(filters.regex('^settings$') & (filters.user(get_admin()) | filters.user(SUDO_USERS)))
 async def settings_handler(bot : Client , message : Message):
-    info=get_settings()
-    text=f"""
-🔄 Limite de abonnés : {info.subs_limit}
-🏷 Taille de la liste : {info.list_size}
-    """
-    await bot.send_message(message.from_user.id,text,reply_markup=settings_markup())
+    info = get_settings() 
+    if isinstance(info, dict):
+        text = f"""
+🔄 Limite de abonnés : {info.get('subs_limit', 'Non défini')}
+🏷 Taille de la liste : {info.get('list_size', 'Non défini')}
+        """
+    else:  
+        text = f"""
+🔄 Limite de abonnés : {info.subs_limit if info.subs_limit else 'Non défini'}
+🏷 Taille de la liste : {info.list_size if info.list_size else 'Non défini'}
+        """
+    
+    await bot.send_message(message.from_user.id, text, reply_markup=settings_markup())
     
 @Bot.on_callback_query(filters.regex('^subs_limit$') &(filters.user(get_admin()) | filters.user(SUDO_USERS)))
 async def subs_limit_handler(bot : Client , message : Message):
