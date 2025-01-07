@@ -24,8 +24,8 @@ logging.basicConfig(
     level=logging.WARNING, 
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[
-        logging.FileHandler("bot.log"),  # Écrit les logs dans bot.log
-        # logging.StreamHandler()  # Désactivé pour ne pas écrire dans la console
+       # logging.FileHandler("bot.log"),  # Écrit les logs dans bot.log
+        logging.StreamHandler()  # Désactivé pour ne pas écrire dans la console
     ]
 )
 
