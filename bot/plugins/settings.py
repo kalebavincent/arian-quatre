@@ -22,9 +22,14 @@ async def bot_stats(bot: Client, message: Message):
 @Bot.on_callback_query(filters.regex('^settings$') & (filters.user(get_admin()) | filters.user(SUDO_USERS)))
 async def settings_handler(bot: Client, message: Message):
     info = get_settings()
-    # Remplacer None par "Non défini"
-    subs_limit = info.subs_limit if info.subs_limit is not None else "Non défini"
-    list_size = info.list_size if info.list_size is not None else "Non défini"
+    
+    # Vérification si 'info' est un dictionnaire ou un objet avec des attributs
+    if isinstance(info, dict):
+        subs_limit = info.get("subs_limit", "Non défini")
+        list_size = info.get("list_size", "Non défini")
+    else:
+        subs_limit = getattr(info, "subs_limit", "Non défini")
+        list_size = getattr(info, "list_size", "Non défini")
     
     text = f"""
 🔄 Limite de abonnés : {subs_limit}
