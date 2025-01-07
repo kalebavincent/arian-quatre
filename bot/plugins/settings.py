@@ -23,14 +23,11 @@ async def bot_stats(bot: Client, message: Message):
 @Bot.on_callback_query(filters.regex('^settings$') & (filters.user(get_admin()) | filters.user(SUDO_USERS)))
 async def settings_handler(bot: Client, message: Message):
     info = get_settings()
-    
-    # Vérification si 'info' est None
+
     if info is None:
-        # Initialisation des paramètres par défaut ou envoi d'un message d'erreur
         await bot.send_message(message.from_user.id, "❌ Aucune configuration trouvée. Veuillez définir les paramètres de configuration.", reply_markup=settings_markup())
         return
-    
-    # Si les paramètres existent, affichez les informations
+
     text = f"""
 🔄 Limite des abonnés : {info.subs_limit}
 🏷 Taille de la liste : {info.list_size}
