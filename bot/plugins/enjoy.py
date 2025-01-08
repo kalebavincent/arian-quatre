@@ -1,6 +1,6 @@
 import asyncio
 from pyrogram import Client, filters, enums
-from helper.ms_gen import ReactionMessage
+from bot.helper.ms_gen import ReactionMessage
 
 last_sent_messages = {}
 
