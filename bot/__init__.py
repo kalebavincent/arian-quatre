@@ -71,6 +71,10 @@ if user_chat_id:
 # Flask server setup
 app = Flask(__name__)
 
+@app.route('/')
+def index():
+    return "Welcome to the server!"
+
 @app.route('/health', methods=['GET'])
 def health_check():
     """ Endpoint to check if the server is alive. """
