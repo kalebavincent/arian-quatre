@@ -108,11 +108,11 @@ def add_bottom_text(text):
    
         
 def get_buttons():
-    
-        return  session.query(Button).all()
+    LOGGER.info(f"get btn")
+    return  session.query(Button).all()
   
         
 def get_post():
     
-        return  session.query(Post).filter(Post.id==1).first()
+    return  session.query(Post).filter(Post.id==1).first()
    
