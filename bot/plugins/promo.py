@@ -47,9 +47,8 @@ async def delete_promo_handler(bot:Client,message:Message):
 @Bot.on_callback_query(filters.regex('^send_with_dynamic_columns$') & filters.user(get_admin()))
 async def send_with_dynamic_columns(bot: Client, message: Message):
     LOGGER.info("Handler: send_with_dynamic_columns triggered")
-    global sent_message_ids  # Utilisation de la variable globale
+    global sent_message_ids 
     try:
-        # Récupérer les paramètres
         info = get_settings()
         if isinstance(info, dict):
             rows = info.get("row", "Non défini")
@@ -58,64 +57,54 @@ async def send_with_dynamic_columns(bot: Client, message: Message):
             rows = getattr(info, "row", "Non défini")
             max_col = rows
         
-        max_buttons_per_message = 20  # Nombre maximal de boutons par message
+        max_buttons_per_message = 20 
         buttons = []
         promo = get_post()
 
-        # Récupérer la liste des canaux et créer des boutons
-        for channel_ids in a:  # Assumons que 'a' contient des listes d'IDs de canaux
-            for ch_id in channel_ids:  # itérer sur chaque ID de canal dans la liste
-                ch = get_channel_by_id(ch_id)  # Récupère le canal à partir de la base de données
-                if ch:  # Vérifie si le canal existe et est un objet valide
+        for channel_ids in a:  
+            for ch_id in channel_ids: 
+                ch = get_channel_by_id(ch_id) 
+                if ch: 
                     button = InlineKeyboardButton(ch.channel_name, url=ch.invite_link)
                     buttons.append(button)
 
-        # Calculer dynamiquement le nombre de colonnes
         total_buttons = len(buttons)
-        col = min(max_col, max(1, total_buttons // 2))  # S'assurer qu'il y a au moins 1 colonne et ajuster selon la taille des boutons
+        col = min(max_col, max(1, total_buttons // 2))
 
-        # Organiser les boutons en lignes et colonnes
         button_rows = [buttons[i:i + col] for i in range(0, total_buttons, col)]
 
-        # Message de promo à envoyer
         dest = f"{promo.set_top}\n\n{p}\n\n{promo.set_bottom}"
         
-        # Envoi des messages avec les boutons dynamiques
         for row in button_rows:
             markup = InlineKeyboardMarkup([row])
             
-            # Envoi dans tous les canaux
             for channel_ids in a:
-                for ch_id in channel_ids:  # On s'assure que 'ch_id' est un ID valide
+                for ch_id in channel_ids:  
                     try:
-                        ch = get_channel_by_id(ch_id)  # Récupère le canal à partir de la base de données
+                        ch = get_channel_by_id(ch_id) 
                         if ch:
-                            # Envoi de la photo avec le texte de la promo
                             sent_message = await bot.send_photo(
-                                ch.channel_id,  # Utilisation de l'ID du canal
+                                ch.channel_id,  
                                 'bot/downloads/image.jpg', 
-                                caption=dest,  # Le texte de la promo
-                                reply_markup=markup,  # Les boutons
-                                parse_mode=enums.ParseMode.HTML  # Le format HTML
+                                caption=dest,  
+                                reply_markup=markup, 
+                                parse_mode=enums.ParseMode.HTML  
                             )
 
-                            # Enregistrement de l'ID du message envoyé pour suppression future
                             sent_message_ids.append(sent_message.id)
 
                     except Exception as e:
                         LOGGER.error(f"Erreur lors de l'envoi dans le canal {ch_id}: {e}")
-                        continue  # Passer au canal suivant si une erreur se produit
+                        continue 
 
-        # Vous pouvez maintenant utiliser sent_message_ids pour la suppression massive plus tard
         LOGGER.info(f"Messages envoyés avec succès, IDs : {sent_message_ids}")
 
-        # Envoi du message de confirmation dans le chat du bot
         confirmation_text = "La promotion a été envoyée dans tous les canaux. Vous pouvez maintenant effacer les messages envoyés."
         confirmation_markup = InlineKeyboardMarkup([ 
             [InlineKeyboardButton("Effacer", callback_data="delete_messages")]
         ])
         await bot.send_message(
-            message.message.chat.id,  # Modification ici : Utilisez message.message.chat.id
+            message.message.chat.id, 
             confirmation_text,
             reply_markup=confirmation_markup,
             parse_mode=enums.ParseMode.HTML
@@ -128,15 +117,13 @@ async def send_with_dynamic_columns(bot: Client, message: Message):
 @Bot.on_callback_query(filters.regex('^delete_messages$') & filters.user(get_admin()))
 async def delete_messages_handler(bot: Client, message: Message):
     try:
-        global sent_message_ids  # Référence à la variable globale
+        global sent_message_ids
 
-        # Suppression des messages envoyés dans tous les canaux
-        for channel_ids in a:  # Liste des canaux
-            for ch_id in channel_ids:  # itérer sur chaque ID de canal
-                ch = get_channel_by_id(ch_id)  # Récupère le canal à partir de la base de données
+        for channel_ids in a: 
+            for ch_id in channel_ids: 
+                ch = get_channel_by_id(ch_id)
                 if ch:
                     try:
-                        # Suppression des messages envoyés à partir des IDs stockés
                         await bot.delete_messages(ch.channel_id, message_ids=sent_message_ids)
                         LOGGER.info(f"Messages supprimés dans le canal {ch.channel_id}")
                     except Exception as e:
@@ -144,14 +131,12 @@ async def delete_messages_handler(bot: Client, message: Message):
                 else:
                     LOGGER.error(f"Canal avec l'ID {ch_id} non trouvé.")
 
-        # Confirmation de la suppression
         await bot.send_message(
-            message.message.chat.id,  # Utilisation de message.message.chat.id ici
+            message.message.chat.id,
             "Tous les messages ont été supprimés.",
             parse_mode=enums.ParseMode.HTML
         )
 
-        # Réinitialiser la liste des message_ids après suppression
         sent_message_ids = []
 
     except Exception as e:
@@ -180,7 +165,7 @@ async def send_classic_promo_handler(bot:Client,message:Message):
                 for x in i:
                     chname=get_channel_by_id(x)
                     try:
-                        id_channel=await bot.forward_messages(chat_id=x,from_chat_id=SUPPORT_CHANNEL,message_ids=forward.message_id)
+                        id_channel=await bot.forward_messages(chat_id=x,from_chat_id=SUPPORT_CHANNEL,message_ids=forward.id)
                         save_message_ids(x,id_channel.message_id)
                         channl+=f"✅ Nom du canal : {chname.channel_name}\nhttp://t.me/c/{str(x)[3:]}/{str(id_channel.message_id)}\n{line}\n\n"
                         
@@ -213,7 +198,7 @@ async def send_morden_promo_handler(bot:Client,message:Message):
                     ch=get_channel_by_id(j)
                     user=get_user_username(ch.chat_id)
                     channel_count=get_user_channel_count(ch.chat_id)
-                    val+=f'\n\n<b>{str(ch.description)}</b>\n{b.emoji}<a href="{ch.invite_link}">「Rejoignez pour Utiliser le Bot」</a>{b.emoji}\n\n'
+                    val+=f'\n\n<b>{str(ch.description)}</b>\n{b.emoji}<a href="{ch.invite_link}">「Rejoins Ici」</a>{b.emoji}\n\n'
                     dest=b.set_top+"\n"+val+"\n"+p+b.set_bottom
                     userdata+=f'<code>@{user} ({channel_count})</code>\n'
                 forward=await bot.send_message(SUPPORT_CHANNEL,dest,reply_markup=promo_button_markup(),disable_web_page_preview=True,parse_mode=enums.ParseMode.HTML)
@@ -222,7 +207,7 @@ async def send_morden_promo_handler(bot:Client,message:Message):
                 for x in i:
                     chname=get_channel_by_id(x)
                     try:
-                        id_channel=await bot.forward_messages(chat_id=x,from_chat_id=SUPPORT_CHANNEL,message_ids=forward.message_id)
+                        id_channel=await bot.forward_messages(chat_id=x,from_chat_id=SUPPORT_CHANNEL,message_ids=forward.id)
                         save_message_ids(x,id_channel.message_id)
                         channl+=f"✅ Nom du canal : {chname.channel_name}\nhttp://t.me/c/{str(x)[3:]}/{str(id_channel.message_id)}\n{line}\n\n"
                         
@@ -263,7 +248,7 @@ async def send_desc_promo_handler(bot:Client,message:Message):
                 for x in i:
                     chname=get_channel_by_id(x)
                     try:
-                        id_channel=await bot.forward_messages(chat_id=x,from_chat_id=SUPPORT_CHANNEL,message_ids=forward.message_id)
+                        id_channel=await bot.forward_messages(chat_id=x,from_chat_id=SUPPORT_CHANNEL,message_ids=forward.id)
                         save_message_ids(x,id_channel.message_id)
                         channl+=f"✅ Nom du canal : {chname.channel_name}\nhttp://t.me/c/{str(x)[3:]}/{str(id_channel.message_id)}\n{line}\n\n"
                         
@@ -283,50 +268,111 @@ async def send_desc_promo_handler(bot:Client,message:Message):
             await bot.send_message(message.message.chat.id,"**⚠️ Un problème est survenu**",parse_mode=enums.ParseMode.MARKDOWN)
             
             
-@Bot.on_callback_query(filters.regex('^send_button_promo$')& filters.user(get_admin()))
-async def send_button_promo_handler(bot:Client,message:Message):
+@Bot.on_callback_query(filters.regex('^send_button_promo$') & filters.user(get_admin()))
+async def send_button_promo_handler(bot: Client, message: Message):
     try:
-            channl=''
-            error_list=''
-            li=1
-            buttons=[]
-            down_buttons=get_buttons()
-            bq=[InlineKeyboardButton(x.name,url=x.url) for x in down_buttons]
-            buttons=[]
-            for i in a:
-                
-                userdata=""
-                
-                for j in i:
-                    ch=get_channel_by_id(j)
-                    user=get_user_username(ch.chat_id)
-                    channel_count=get_user_channel_count(ch.chat_id)
-                    buttons.append(InlineKeyboardButton(ch.description,url=ch.invite_link))
-                    
-                    userdata+=f'<code> @{user} ({channel_count})</code>\n'
-                markup=InlineKeyboardMarkup([buttons,bq])
-                forward= await bot.send_photo(SUPPORT_CHANNEL,'bot/downloads/image.jpg',caption=b.set_caption,
-                                    reply_markup=markup) 
-                await bot.send_message(SUPPORT_CHANNEL,f"Admin Liste {li}\n\n{userdata}")
-                li=li+1
-                for x in i:
-                    chname=get_channel_by_id(x)
-                    try:
-                        id_channel=await bot.forward_messages(chat_id=x,from_chat_id=SUPPORT_CHANNEL,message_ids=forward.message_id)
-                        save_message_ids(x,id_channel.message_id)
-                        channl+=f"✅ Nom du canal : {chname.channel_name}\nhttp://t.me/c/{str(x)[3:]}/{str(id_channel.message_id)}\n{line}\n\n"
-                        
-                    except (ChatAdminRequired,ChannelPrivate,ChatWriteForbidden,ChatForbidden):
-                        await bot.send_message(x.chat_id,f"Échec de l'envoi du message pour {x.channel_name}\nVeuillez republier la promotion pour éviter un bannissement")
-                        error_list+=f"🆔 ID : {x.channel_id}\n📛 Nom : {x.channel_name}\n👨‍ Admin : @{x.admin_username} \n🔗Lien : {x.invite_link}\n➖➖➖➖➖➖➖➖➖➖➖➖➖➖"
-                    except Exception as e:
-                        await bot.send_message(LOG_CHANNEL,f'<code>{traceback.format_exc()}</code>\n\nTemps : {time.ctime()} UTC',parse_mode=enums.ParseMode.HTML)
-                        LOGGER.error(e)
-                        
-                await bot.send_message(SUPPORT_GROUP,f"#shared sucessfull\n\n{channl} ",parse_mode=enums.ParseMode.MARKDOWN)
-                await bot.send_message(SUPPORT_GROUP,f"#unsucessfull\n\n{error_list}") 
-                
+        channl = ''
+        error_list = ''
+        li = 1
+        down_buttons = get_buttons() 
+        bq = [InlineKeyboardButton(x.name, url=x.url) for x in down_buttons]
+
+        for i in a:  
+            userdata = ""
+            all_buttons = []
+            grouped_buttons = []
+            
+            for j in i:
+                ch = get_channel_by_id(j)
+                user = get_user_username(ch.chat_id)
+                channel_count = get_user_channel_count(ch.chat_id)
+
+                all_buttons.append(InlineKeyboardButton(ch.description, url=ch.invite_link))
+                userdata += f'<code>@{user} ({channel_count})</code>\n'
+
+            while all_buttons:
+                grouped_buttons += [all_buttons[:3]] 
+                all_buttons = all_buttons[3:] 
+
+                if len(grouped_buttons) == 3:
+                    grouped_buttons.append([InlineKeyboardButton("Ajouter ton canal", url=f"https://t.me/{bot.username}")])
+                    grouped_buttons += [all_buttons[:3]] 
+                    all_buttons = all_buttons[3:]
+            
+            grouped_buttons.append(bq)
+
+            markup = InlineKeyboardMarkup(grouped_buttons)
+
+            forward = await bot.send_photo(
+                SUPPORT_CHANNEL,
+                'bot/downloads/image.jpg',
+                caption=b.set_caption,
+                reply_markup=markup
+            )
+
+            await bot.send_message(SUPPORT_CHANNEL, f"Admin Liste {li}\n\n{userdata}")
+            li += 1
+
+            for x in i:
+                chname = get_channel_by_id(x)
+                try:
+                    id_channel = await bot.forward_messages(
+                        chat_id=x,
+                        from_chat_id=SUPPORT_CHANNEL,
+                        message_ids=forward.id 
+                    )
+
+                    save_message_ids(x, id_channel.id)
+
+                    channl += (
+                        f"✅ Nom du canal : {chname.channel_name}\n"
+                        f"http://t.me/c/{str(x)[3:]}/{str(id_channel.id)}\n"
+                        f"{line}\n\n"
+                    )
+
+                except (ChatAdminRequired, ChannelPrivate, ChatWriteForbidden, ChatForbidden) as e:
+                    await bot.send_message(
+                        x.chat_id,
+                        f"Échec de l'envoi du message pour {chname.channel_name}\n"
+                        "Veuillez republier la promotion pour éviter un bannissement."
+                    )
+                    error_list += (
+                        f"🆔 ID : {x.channel_id}\n"
+                        f"📛 Nom : {chname.channel_name}\n"
+                        f"👨‍ Admin : @{chname.admin_username}\n"
+                        f"🔗 Lien : {chname.invite_link}\n"
+                        f"➖➖➖➖➖➖➖➖➖➖➖➖➖➖\n"
+                    )
+
+                except Exception as e:
+                    await bot.send_message(
+                        LOG_CHANNEL,
+                        f'<code>{traceback.format_exc()}</code>\n\nTemps : {time.ctime()} UTC',
+                        parse_mode=enums.ParseMode.HTML
+                    )
+                    LOGGER.error(e)
+
+            await bot.send_message(
+                SUPPORT_GROUP,
+                f"#shared_successful\n\n{channl}",
+                parse_mode=enums.ParseMode.MARKDOWN
+            )
+            if error_list:
+                await bot.send_message(
+                    SUPPORT_GROUP,
+                    f"#unsuccessful\n\n{error_list}",
+                    parse_mode=enums.ParseMode.MARKDOWN
+                )
+
     except Exception as e:
-            LOGGER.error(e)
-            await bot.send_message(LOG_CHANNEL,f'\n<code>{traceback.format_exc()}</code>\n\nTemps : {time.ctime()} UTC',parse_mode=enums.ParseMode.HTML)
-            await bot.send_message(message.message.chat.id,"**⚠️ Un problème est survenu**",parse_mode=enums.ParseMode.MARKDOWN)
+        LOGGER.error(e)
+        await bot.send_message(
+            LOG_CHANNEL,
+            f'<code>{traceback.format_exc()}</code>\n\nTemps : {time.ctime()} UTC',
+            parse_mode=enums.ParseMode.HTML
+        )
+        await bot.send_message(
+            message.chat.id,
+            "**⚠️ Un problème est survenu**",
+            parse_mode=enums.ParseMode.MARKDOWN
+        )

@@ -1,6 +1,6 @@
 async-lru==1.0.2
 greenlet==1.1.0
-# psycopg2-binary==2.8.6
+psycopg2-binary
 pyaes
 Pyrogram
 pyromod
