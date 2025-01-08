@@ -1,11 +1,14 @@
-from flask import Flask, jsonify
-import threading
+#-*-coding : utf-8 -*-
+
 import asyncio
 from platform import python_version
 from time import gmtime, strftime, time
 from pyrogram import Client, __version__, enums
 from pyrogram.raw.all import layer
-from bot.database import session, base
+import os
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from bot.database import session,base
+from pyromod import listen
 from bot import (
     STRING_SESSION,
     API_HASH,
@@ -17,11 +20,6 @@ from bot import (
     WORKERS,
     UPTIME,
     BOT_TOKEN)
-
-app = Flask(__name__)
-
-# Variable globale pour savoir si le bot est en ligne
-bot_online = False
 
 class Bot(Client):
     def __init__(self):
@@ -36,63 +34,34 @@ class Bot(Client):
             parse_mode=enums.ParseMode.HTML
         )
         
+        
+    
     async def start(self):
-        global bot_online
         await super().start() 
         LOGGER.info("Starting bot...")
-
-        me = await self.get_me()  
+        
+        me=await self.get_me()  
         LOGGER.info(
             f"Pyrogram v{__version__} (Layer - {layer}) started on {me.username} [{me.id}]",
         )
         LOGGER.info(f"Python Version: {python_version()}\n")
         LOGGER.info("Bot Started Successfully!\n")
-        await asyncio.sleep(50)
-        await self.send_message(LOG_CHANNEL, "<i>Démarrage du bot...</i>")
-        
-        bot_online = True  # Marquer le bot comme étant en ligne
-
+        # await asyncio.sleep(10)
+        # await self.send_message(LOG_CHANNEL, "<i>Starting Bot...</i>")
     async def stop(self):
-        global bot_online
+        #LOGGER.info("Closing Database Connection")
         runtime = strftime("%Hh %Mm %Ss", gmtime(time() - UPTIME))
         LOGGER.info("Uploading logs before stopping...!\n")
         await self.send_message(
             LOG_CHANNEL,
-            ("Bot arrêté!\n\n"
-             f"Temps d'exécution: {runtime}\n"
-             f"<code>{LOG_DATETIME}</code>")
-        )
-
+                ("Bot Stopped!\n\n"
+                f"Uptime: {runtime}\n"
+                f"<code>{LOG_DATETIME}</code>")
+            ),
+        
         await super().stop()
         LOGGER.info(
-            f"""Bot arrêté [Temps d'exécution: {runtime}s]\n"""
+            f"""Bot Stopped [Runtime: {runtime}s]\n
+        """,
         )   
-        bot_online = False  # Marquer le bot comme arrêté
-
-# Route Flask pour vérifier si le bot est en ligne
-@app.route("/check_live", methods=["GET"])
-def check_live():
-    if bot_online:
-        return jsonify({"status": "Bot is online"}), 200
-    else:
-        return jsonify({"status": "Bot is offline"}), 503
-
-# Fonction pour démarrer Flask dans un thread séparé
-def run_flask():
-    app.run(host="0.0.0.0", port=5000, debug=False)
-
-# Démarrer le bot et le serveur Flask dans des threads séparés
-def start_bot_and_flask():
-    bot = Bot()
-
-    # Lancer Flask dans un thread séparé
-    flask_thread = threading.Thread(target=run_flask)
-    flask_thread.daemon = True
-    flask_thread.start()
-
-    # Démarrer le bot
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(bot.start())
-
-if __name__ == "__main__":
-    start_bot_and_flask()
+    

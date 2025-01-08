@@ -58,6 +58,7 @@ def settings_markup():
         [
             [InlineKeyboardButton('☑️ Définir la limite d\'abonnés', callback_data='subs_limit')],
             [InlineKeyboardButton('☑️ Définir la taille de la liste', callback_data='list_size')],
+            [InlineKeyboardButton('☑️ Définir le nombre de colonne', callback_data='set_col')],
             [InlineKeyboardButton('🔙 Retour', callback_data='back')]
         ]
     )
@@ -94,8 +95,9 @@ def preview_list_markup():
     classic_promo = InlineKeyboardButton('🏛 Promo classique', callback_data='preview_classic_promo')
     morden_promo = InlineKeyboardButton('🔰 Promo standard', callback_data='preview_morden_promo')
     descpromo = InlineKeyboardButton('🎐 Promo description', callback_data='preview_desc_promo')
+    btn = InlineKeyboardButton('cross', callback_data='preview_with_dynamic_columns')
     back = InlineKeyboardButton('🔙 Retour', callback_data='back')
-    markup = InlineKeyboardMarkup([[button_promo, classic_promo], [morden_promo, descpromo], [back]])
+    markup = InlineKeyboardMarkup([[button_promo, classic_promo], [morden_promo, descpromo],[btn] ,[back]])
     return markup
 
 def announce_markup():
@@ -109,9 +111,10 @@ def announce_markup():
 
 def send_promo_markup():
     button_promo = InlineKeyboardButton('🔳 Promo avec bouton', callback_data='send_button_promo')
+    cross_promo = InlineKeyboardButton('🔳 Cross avec bouton', callback_data='send_with_dynamic_columns')
     classic_promo = InlineKeyboardButton('🏛 Promo classique', callback_data='send_classic_promo')
     morden_promo = InlineKeyboardButton('🔰 Promo standard', callback_data='send_standard_promo')
     descpromo = InlineKeyboardButton('🎐 Promo description', callback_data='send_desc_promo')
     back = InlineKeyboardButton('🔙 Retour', callback_data='back')
-    markup = InlineKeyboardMarkup([[button_promo, classic_promo], [morden_promo, descpromo], [back]])
+    markup = InlineKeyboardMarkup([[button_promo, classic_promo], [morden_promo, descpromo], [cross_promo], [back]])
     return markup

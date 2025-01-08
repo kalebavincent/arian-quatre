@@ -154,6 +154,13 @@ def get_user_channel_count(chat_id):
         return session.query(Channel).filter(Channel.chat_id==chat_id).count()
     finally:
         session.close()
+
+def get_all_channels():
+    try:
+        LOGGER.info("Fetching all registered channels.")
+        return session.query(Channel).all()
+    finally:
+        session.close()
         
 def chunck():
     l=[r.channel_id for r in session.query(Channel).distinct()]

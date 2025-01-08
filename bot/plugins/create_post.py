@@ -35,8 +35,9 @@ async def set_button_handler(bot: Client, message: Message):
         else:
             # Vérification que le nom et l'URL sont valides
             if btn_name.text and btn_link.text:
+                print("btnName :", btn_name.text )
                 # Insertion dans la base de données
-                add_button(btn_name.text, btn_link.text)
+                add_button(name=btn_name.text, url=btn_link.text)
                 await bot.send_message(
                     message.message.chat.id,
                     f"<b>✅ Bouton ajouté avec succès</b>\n\nNom : {btn_name.text}\nURL : {btn_link.text}",

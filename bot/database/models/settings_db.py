@@ -12,12 +12,14 @@ class Settings(base):
     id = Column(Integer, primary_key=True)
     subs_limit = Column(Integer, default=0)
     list_size = Column(Integer, default=25)
+    row = Column(Integer, default=5)
 
     def __repr__(self):
         return f'{self.id}'
 
 engine = session.get_bind() 
 Settings.__table__.create(bind=engine, checkfirst=True)
+
 
 
 
@@ -31,6 +33,16 @@ def add_subs_limit(limit):
             session.commit()
         else:
             session.add(Settings(subs_limit=int(limit)))
+            session.commit()
+            
+def add_row(row):
+    with LOCK:
+        settings=session.query(Settings).first()
+        if settings:
+            session.query(Settings).filter(Settings.id==1).update({Settings.row:int(row)})
+            session.commit()
+        else:
+            session.add(Settings(row=int(row)))
             session.commit()
 
 def add_list_size(size):
@@ -65,3 +77,9 @@ def get_list_size():
     if settings is None:
         return "Non défini"
     return settings.list_size
+
+def get_row():
+    settings = session.query(Settings).first()
+    if settings is None:
+        return int(1)
+    return settings.row

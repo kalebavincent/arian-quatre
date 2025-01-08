@@ -30,7 +30,7 @@ class Button(base):
     url=Column(String)
 
     def __init__(self,name,url):
-        self.set_button_name=name
+        self.name=name
         self.url=url
 
     def __repr__(self):
