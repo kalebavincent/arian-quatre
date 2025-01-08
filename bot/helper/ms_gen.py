@@ -13,7 +13,7 @@ class ReactionMessage:
             "Maintenant que tu es là, pourquoi ne pas participer en ajoutant une petite réaction sur les vidéos ci-dessus ? C’est facile, et c’est toujours apprécié ! ✨",
             "Tu veux vraiment marquer ta curiosité ? Alors n’hésite pas à réagir aux vidéos au-dessus, c’est une façon cool de montrer ton intérêt ! 😎",
             "Si tu as pris une minute pour lire ce message, laisse une petite réaction sur les vidéos juste au-dessus, merci d'avance ! 🙏"
-            "Tu peut me crée plusieurs petite phrase de ce genre : Ta curiosité m’épatera toujours, je voulu juste que tu lise ce message et comme tu l’a lu laisse des petits reactions sur les vidéos ci haut stp 😮‍💨",
+            "Ta curiosité m’épatera toujours, je voulu juste que tu lise ce message et comme tu l’a lu laisse des petits reactions sur les vidéos ci haut stp 😮‍💨",
             "Tu es vraiment imprévisible, j'espère que tu as pris le temps de lire ce message. Maintenant, laisse des petites réactions sur les vidéos au-dessus, ça fait toujours plaisir ! 😏",
             "Ta curiosité n'a pas de limites ! J'avais juste envie que tu lises ce message, et si tu l'as fait, laisse une petite réaction sur les vidéos en haut, ça serait super ! 👀",
             "Alors, tu as lu ce message, maintenant pourquoi ne pas réagir aux vidéos au-dessus ? C'est super simple, et c'est toujours apprécié ! 😍",
