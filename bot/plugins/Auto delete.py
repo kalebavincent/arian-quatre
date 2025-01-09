@@ -21,7 +21,7 @@ def parse_delay_string(delay_str: str):
     except ValueError:
         return None
 
-@Client.on_message(filters.command("setdelay") & filters.regex(r"^/setdelay\s*(\d+[mhd]|off)$") & filters.chat)
+@Client.on_message(filters.regex(r"^/setdelay\s*(\d+[mhd]|off)$") & filters.chat)
 async def set_delay(client: Client, message: Message):
     """Commande pour définir ou désactiver la suppression automatique."""
     chat_id = message.chat.id
@@ -65,7 +65,7 @@ async def set_delay(client: Client, message: Message):
                 parse_mode=ParseMode.MARKDOWN,
             )
 
-@Client.on_message(filters.text & filters.chat)
+@Client.on_message(filters.chat)
 async def auto_delete(client: Client, message: Message):
     """Surveille les messages dans les chats où la suppression automatique est activée."""
     chat_id = message.chat.id
