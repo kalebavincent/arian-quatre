@@ -1,6 +1,6 @@
 from pyrogram import Client, filters
 from pyrogram.types import Message
-from pyrogram.enums import ParseMode
+from pyrogram.enums import ParseMode, ChatType
 from datetime import timedelta
 import asyncio
 
@@ -21,7 +21,7 @@ def parse_delay_string(delay_str: str):
     except ValueError:
         return None
 
-@Client.on_message(filters.command("setdelay") & (filters.chat_type.groups | filters.chat_type.supergroups | filters.chat_type.channels))
+@Client.on_message(filters.command("setdelay") & filters.regex(r"^/setdelay\s*(\d+[mhd]|off)$") & (filters.chat_type.groups | filters.chat_type.supergroups | filters.chat_type.channels))
 async def set_delay(client: Client, message: Message):
     """Commande pour définir ou désactiver la suppression automatique."""
     chat_id = message.chat.id
@@ -56,11 +56,12 @@ async def set_delay(client: Client, message: Message):
                 parse_mode=ParseMode.MARKDOWN
             )
 
-@Client.on_message(filters.chat_type.groups | filters.chat_type.supergroups | filters.chat_type.channels)
+@Client.on_message(filters.text & (filters.chat_type.groups | filters.chat_type.supergroups | filters.chat_type.channels))
 async def auto_delete(client: Client, message: Message):
     """Surveille les messages dans les chats où la suppression automatique est activée."""
     chat_id = message.chat.id
 
+    # Vérifie si le type de chat est valide et si la suppression automatique est activée
     if chat_id in auto_delete_settings and auto_delete_settings[chat_id]["enabled"]:
         delay = auto_delete_settings[chat_id]["delay"]
         await asyncio.sleep(delay.total_seconds())
