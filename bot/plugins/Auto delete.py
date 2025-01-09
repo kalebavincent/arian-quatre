@@ -21,16 +21,25 @@ def parse_delay_string(delay_str: str):
     except ValueError:
         return None
 
-@Client.on_message(filters.command("setdelay") & filters.regex(r"^/setdelay\s*(\d+[mhd]|off)$") & (filters.chat_type.groups | filters.chat_type.supergroups | filters.chat_type.channels))
+@Client.on_message(filters.command("setdelay") & filters.regex(r"^/setdelay\s*(\d+[mhd]|off)$") & filters.chat)
 async def set_delay(client: Client, message: Message):
     """Commande pour définir ou désactiver la suppression automatique."""
     chat_id = message.chat.id
+
+    # Vérifier si le message vient d'un groupe, supergroupe ou canal
+    if message.chat.type not in [ChatType.GROUP, ChatType.SUPERGROUP, ChatType.CHANNEL]:
+        await message.reply(
+            "Cette commande peut seulement être utilisée dans un groupe, supergroupe ou canal.",
+            parse_mode=ParseMode.MARKDOWN,
+        )
+        return
+
     command = message.text.split(maxsplit=1)
 
     if len(command) < 2:
         await message.reply(
             "Utilisation : `/setdelay 30m` ou `/setdelay off`",
-            parse_mode=ParseMode.MARKDOWN
+            parse_mode=ParseMode.MARKDOWN,
         )
         return
 
@@ -40,7 +49,7 @@ async def set_delay(client: Client, message: Message):
         auto_delete_settings.pop(chat_id, None)
         await message.reply(
             "La suppression automatique des messages a été désactivée pour ce chat.",
-            parse_mode=ParseMode.MARKDOWN
+            parse_mode=ParseMode.MARKDOWN,
         )
     else:
         delay = parse_delay_string(delay_str)
@@ -48,20 +57,20 @@ async def set_delay(client: Client, message: Message):
             auto_delete_settings[chat_id] = {"delay": delay, "enabled": True}
             await message.reply(
                 f"La suppression automatique est activée avec un délai de `{delay_str}`.",
-                parse_mode=ParseMode.MARKDOWN
+                parse_mode=ParseMode.MARKDOWN,
             )
         else:
             await message.reply(
                 "Format de délai invalide. Utilisez `Xm`, `Xh`, ou `Xd`.",
-                parse_mode=ParseMode.MARKDOWN
+                parse_mode=ParseMode.MARKDOWN,
             )
 
-@Client.on_message(filters.text & (filters.chat_type.groups | filters.chat_type.supergroups | filters.chat_type.channels))
+@Client.on_message(filters.text & filters.chat)
 async def auto_delete(client: Client, message: Message):
     """Surveille les messages dans les chats où la suppression automatique est activée."""
     chat_id = message.chat.id
 
-    # Vérifie si le type de chat est valide et si la suppression automatique est activée
+    # Vérifie si la suppression automatique est activée pour ce chat
     if chat_id in auto_delete_settings and auto_delete_settings[chat_id]["enabled"]:
         delay = auto_delete_settings[chat_id]["delay"]
         await asyncio.sleep(delay.total_seconds())
